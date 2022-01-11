@@ -2,9 +2,10 @@ import numpy as np
 from qscg import *
 
 
-def random_f(n, d):
+def random_hamiltonian(n, d) -> np.ndarray:
+    """Return a random d-sparse hamiltonian for n qubits."""
     N = 2**n
-    m = np.random.random_integers(0, 1, size=(N, N))
+    m = np.random.randint(0, 2, size=(N, N)) # 0 or 1
     m = np.tril(m) + np.tril(m, -1).T
     for x in range(N):
         while sum(m[x]) > d:
@@ -13,44 +14,25 @@ def random_f(n, d):
                 r = r + 1
             m[x, r % N] = 0
             m[r % N, x] = 0
+    return m
 
+def random_f(n, d):
+    m = random_hamiltonian(n, d)
+    print('Original Hamiltonian:')
     print(m)
-    print("----")
-
-    def f(x, i):
-        k = 0
-        count = 0
-        while k < N:
-            if m[x, k] != 0:
-                if count == i:
-                    return k, m[x, k]
-                count = count + 1
-            k = k + 1
-        return x, 0
-
-    return f
+    print('----')
+    return hamiltonian_to_oracle(m)
 
 
 if __name__ == '__main__':
+    np.random.seed(1)
     n = 3
     d = 4
     md = OneSparseDecomposer(random_f(n, d), d, n)  # lambda x, i: (x ^ (1 << i), 1), n, n)
-    # md.display_matrix()
+    md.print_edge_colorings()
 
-    ms = [[[np.zeros((2**n, 2**n)).astype(int) for _ in range(6)] for _ in range(d)] for _ in range(d)]
+    ms = md.decompose_hamiltonian()
+    print(*ms, sep='\n\n')
 
-    for x in range(2**n):
-        for i in range(d):
-            for j in range(d):
-                for uid in range(6):
-                    y, h = md.g(x, i, j, uid)
-                    ms[i][j][uid][x][y] = h
-
-    ms = [item for sublist in ms for item in sublist]
-    ms = [item for sublist in ms for item in sublist]
-
-    for m in ms:
-        if not np.array_equal(m, np.zeros((2**n, 2**n)).astype(int)):
-            print(m)
-
-    # print(np.sum(ms, axis=0))
+    print("\n\n")
+    print(md.original_hamiltonian())
