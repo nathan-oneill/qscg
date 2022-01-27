@@ -73,7 +73,8 @@ class OneSparseDecomposer:
             should return :math:`(y_i, H_{x,y_i})` for :math:`i \le D'`, and
             :math:`(x,0)` for `i > D'`.
         d : int
-            Decompose into O(d^2) 1-sparse Hamiltonians.
+            Sparsity of the oracle's (`f`) Hamiltonian. Algorithm will
+            decompose into O(d^2) 1-sparse Hamiltonians.
         n : int
             Number of qubits -> dimension of matrix is 2**n by 2**n.
         
